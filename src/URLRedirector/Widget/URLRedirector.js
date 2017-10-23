@@ -17,15 +17,15 @@
 	===========
 
 */
-dojo.provide("URLRedirector.Widget.URLRedirector");
+define([
+    "dojo/_base/declare",
+    "mxui/widget/_WidgetBase",
+    "dojo/_base/lang"
+], function (declare, _WidgetBase, lang) {
+    "use strict";
 
-mendix.widget.declare("URLRedirector.Widget.URLRedirector",
-{
+    return declare("URLRedirector.Widget.URLRedirector", [ _WidgetBase ], {
     //DECLARATION
-    addons:
-        [
-            mendix.addon._Contextable
-	],
     inputargs   :
         {
             URLAttribute    : "",
@@ -45,7 +45,7 @@ mendix.widget.declare("URLRedirector.Widget.URLRedirector",
             try {
                 if (this.URLAttribute != '')
                 {
-                    var url = dataobject.getAttribute(this.URLAttribute);
+                    var url = dataobject.get(this.URLAttribute);
                     logger.debug(this.id + ".setDataobject: using url: " + this.urlprefix + url);
 																				this.redirectTo(this.urlprefix + url);
                 }
@@ -53,7 +53,7 @@ mendix.widget.declare("URLRedirector.Widget.URLRedirector",
             }
             catch (err) {
                 logger.warn(this.id +'.setDataobject: error while loading embedding code' + err);
-                loaded = false;
+                // loaded = false;
             }
         }
         else
@@ -70,11 +70,11 @@ mendix.widget.declare("URLRedirector.Widget.URLRedirector",
     postCreate : function()
     {
         logger.debug(this.id + ".postCreate");
-								if (this.URLAttribute != '')
-												this.initContext();
-								else
-												this.redirectTo(this.urlprefix);
-        this.actRendered();
+								// if (this.URLAttribute != '')
+								// 				this.initContext();
+								// else
+												// this.redirectTo(this.urlprefix);
+        // this.actRendered();
     },
 
     blankTarget : function(url)
@@ -86,7 +86,10 @@ mendix.widget.declare("URLRedirector.Widget.URLRedirector",
     {
         logger.debug(this.id + ".applyContext");
         if (context)
-            mx.processor.getObject(context.getActiveGUID(), dojo.hitch(this, this.setDataobject));
+        mx.data.get({
+            guid: context.getTrackId(),
+            callback: lang.hitch(this, this.setDataobject)
+        });
         else
             logger.warn(this.id + ".applyContext received empty context");
         callback && callback();
@@ -96,4 +99,7 @@ mendix.widget.declare("URLRedirector.Widget.URLRedirector",
     {
         logger.debug(this.id + ".uninitialize");
     }
-});
+        });
+    });
+
+require([ "URLRedirector/Widget/URLRedirector" ]);
